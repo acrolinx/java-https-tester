@@ -10,12 +10,13 @@ In
 removed support for SHA-1 signed certificates in HTTPS
 connections. We've seen connection problems after such a Java update
 in production systems when not all certificates where updated before
-the Java update was rolled out.
+the Java update was rolled out. Another reason for connection problems
+we often see is the missing installation of the strong crypto for Java
+(JCE, see below).
 
 This program can be used to test and analyze an HTTPS connection
 established by a JVM-based program. You can test your local Java
 installation and your server-settings with this.
-
 
 # Build
 
@@ -27,44 +28,43 @@ To create the executable JAR, just run
 
     shell> lein uberjar
     
-in the cloned repository. The resulting stand-alone-JAR will be in the
+in the cloned repository. The resulting executable JAR will be in the
 `target` folder.
 
 # Usage
 
-You can simply run the executable JAR with an URL to connect to (use
-the correct name for the JAR):
+You can simply run the executable JAR with an URL to connect to:
 
-    java -jar https-tester.jar https://www.example.com
+    java -jar java-https-tester.jar https://www.example.com
     
 This program will connect to the server at least two times:
 
 * Once using the Apache HTTP Commons library, 
 * and once using the built-in classes of the JRE.
 
-It may output some information on STDOUT, but the main result is a new
-logfile in the current directory. The logfile's contents may be a lot
-to digest, but look at it line by line and you'll see that it is
-pretty readable.
+It prints the name of a logfile where all information is
+collected. The logfile's contents may be a lot to digest, but look at
+it line by line and you'll see that it is pretty readable.
 
-We are not using the Apache library directly, but via the Clojure
-library [clj-http](https://github.com/dakrone/clj-http). The `get`
-function of that library allows some configurations.  We already pass
-in
+This program does not use the Apache library directly, but via the
+Clojure library [clj-http](https://github.com/dakrone/clj-http). The
+`get` function of that library allows some configurations.  We already
+pass in
 
     {:throw-exceptions true
      :debug true
      :response-interceptor interceptor}
 
-which can not be overwritten.  The interceptor should output some logs
-when you follow redirects.  For other things like proxy
+which can not be overwritten.  The `interceptor` should output some
+logs when you follow redirects.  For other things like proxy
 configurations, keystores, or basic auth, see the documentation
-at [clj-http](https://github.com/dakrone/clj-http). 
+at [clj-http](https://github.com/dakrone/clj-http).
 
-Pass the configuration map as an [EDN]() formatted string parameter:
+Pass the configuration map as
+an [EDN](https://github.com/edn-format/edn) formatted string
+parameter:
 
-    java -jar https-tester.jar -c '{:proxy-host "127.0.0.1"  :proxy-port 8118}' URL...
-
+    java -jar java-https-tester.jar -c '{:proxy-host "127.0.0.1"  :proxy-port 8118}' URL
 
 When connecting to the URL the second time using the common Java
 classes, you can control its behavior by setting the appropriate
@@ -73,10 +73,9 @@ system properties.
 For example, you could create extensive SSL debug logging by calling
 the program like this:
 
-    java -Djavax.net.debug=ssl -jar https-tester.jar https://www.example.com
+    java -Djavax.net.debug=ssl -jar java-https-tester.jar URL
 
-Note, that the extra output is not caught in the logfile but goes to
-STDOUT. See
+See
 http://docs.oracle.com/javase/7/docs/technotes/guides/security/jsse/ReadDebug.html
 and
 https://docs.oracle.com/javase/8/docs/technotes/guides/security/jsse/JSSERefGuide.html#InstallationAndCustomization
@@ -87,11 +86,13 @@ SSL handshake errors, the program tries a third time using an all
 trusting trust manager.  If this succeeds, you'll find the certificate
 chain information in the log file, too.
 
+If still no connection can be established, this is often a good hint
+that you should install JCE.
+
 # Hints
 
-Some hints what you want to look for in your Java installation. We've
-seen several reasons for programs not being able to establish a
-connection. Your mileage may vary.
+Some hints what you want to look for in such a debugging situation.
+Your mileage may vary.
 
 * The most thorough document for everything related to this topic is
   probably the
@@ -101,8 +102,8 @@ connection. Your mileage may vary.
   which was changed significantly in Java 1.8.0_141. It restricts
   usage of SHA-1-signed certificates for TLS connections. Compare it
   to older versions and adjust if you absolutely have to. But be
-  warned that you are reducing the security by doing so. Always prefer
-  using better certificates on the server.
+  warned that you are reducing security by doing so. Always prefer
+  using suitable certificates on the server-side.
 * In some cases the `cacerts` file in that same folder caused problems
   for us.
 * Depending on the configuration of the server you are connecting to,
@@ -112,17 +113,23 @@ connection. Your mileage may vary.
   some ciphers will not be available.
 * If you are installing Oracle Java 8 on a developer Linux machine
   using the [webupd8 PPA](https://launchpad.net/~webupd8team), you may
-  find out that you did not receive the changes on your last
-  update. The installer manages some of the files in the `security`
+  find out that you did not receive Oracle's changes with an
+  update. The package manages some of the files in the `security`
   folder via symlinks to `/etc`.  Analyze those carefully.
 * Another, much more elaborate, tool is the `s_client` module from the
   OpenSSL project. It can validate and output certificates and help a
   lot with debugging connection problems. It does not use the JVM
   though, and is thus a different beast. You often use it like this:
   
-    openssl s_client -showcerts -connect www.example.com:443
+      openssl s_client -showcerts -connect www.example.com:443
+
+# Support
+
+This is not an Acrolinx product. It is a helper tool and provided as
+is. We do not support this program.
 
 # License
 
 This program is Copyright (c) 2017 by Acrolinx GmbH and published
-under the Apache License v2.0. See the LICENSE file for details.
+under the Apache License v2.0. See the LICENSE file.
+
