@@ -13,5 +13,6 @@
                                                     javax.jms/jms
                                                     com.sun.jmdk/jmxtools
                                                     com.sun.jmx/jmxri]]]
+  :uberjar-name "java-https-tester.jar"
   :main com.acrolinx.https-tester
   :aot :all)
