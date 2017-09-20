@@ -21,7 +21,7 @@ installation and your server-settings with this.
 # Build
 
 You need to install [Leiningen](https://leiningen.org/). Don't worry,
-it's really easy. Just a bash script in your path on Linux, OSX or
+it's really easy. Just a bash script in your path on Linux, OSX, or
 Cygwin. There is also a `.bat`` file for Windows.
 
 To create the executable JAR, just run
@@ -33,10 +33,14 @@ in the cloned repository. The resulting executable JAR will be in the
 
 # Usage
 
-You can simply run the executable JAR with an URL to connect to:
+You can simply call `lein run` with a URL to connect to:
 
-    java -jar java-https-tester.jar https://www.example.com
-    
+    lein run https://www.example.com
+
+or run the executable JAR:
+
+    java -jar target/java-https-tester.jar https://www.example.com
+
 This program will connect to the server at least two times:
 
 * Once using the Apache HTTP Commons library, 
@@ -55,7 +59,7 @@ pass in
      :debug true
      :response-interceptor interceptor}
 
-which can not be overwritten.  The `interceptor` should output some
+which cannot be overwritten.  The `interceptor` should output some
 logs when you follow redirects.  For other things like proxy
 configurations, keystores, or basic auth, see the documentation
 at [clj-http](https://github.com/dakrone/clj-http).
