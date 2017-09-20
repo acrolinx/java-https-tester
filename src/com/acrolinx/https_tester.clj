@@ -230,7 +230,7 @@ out.")
                  .getFile))
     (log/with-logs *ns*
 
-      (log/info "===== START =====")
+      (log/info "===== START =====" (first arguments))
 
       (log-sysprops)
       (log-ciphers)
@@ -238,4 +238,4 @@ out.")
       (connect-commons (first arguments)
                        (commons-configuration (:config options)))
       (connect-java (first arguments))
-      (log/info "===== END ====="))))
+      (log/info "===== END =====" (first arguments)))))
